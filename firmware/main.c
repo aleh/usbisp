@@ -17,6 +17,7 @@
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <avr/wdt.h>
+#include <util/delay.h>
 
 #include "usbasp.h"
 #include "usbdrv.h"
@@ -42,13 +43,17 @@ uchar usbFunctionSetup(uchar data[8]) {
 	uchar len = 0;
 
 	if (data[1] == USBASP_FUNC_CONNECT) {
-
+        
 		/* set SCK speed */
-		if ((PINC & (1 << PC2)) == 0) {
-			ispSetSCKOption(USBASP_ISP_SCK_8);
-		} else {
-			ispSetSCKOption(prog_sck);
-		}
+		/* aleh: The code was checking PC2 pin where the "slow SCK" jumper was supported in the original programmer, we are setting max speed instead. */
+		/*~
+			if ((PINC & (1 << PC2)) == 0) {
+				ispSetSCKOption(USBASP_ISP_SCK_1500);
+			} else {
+				ispSetSCKOption(prog_sck);
+			}
+		*/
+		ispSetSCKOption(prog_sck);
 
 		/* set compatibility mode of address delivering */
 		prog_address_newmode = 0;
@@ -300,37 +305,44 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 	return retVal;
 }
 
+/** aleh: LEDs helper, was using while debugging. */
+void leds(uint8_t led0, uint8_t led1) {
+  PORTC = (PORTC & (~((1 << PC1) | (1 << PC0)))) | (led0 ? 0 : (1 << PC0)) | (led1 ? 0 : (1 << PC1));
+}
+
 int main(void) {
-	uchar i, j;
+  
+	/* aleh: only LED pins are used as outputs (active low), off initially, the rest are tri-stated. */
+	DDRC = (1 << PC1) | (1 << PC0);
+	PORTC = (1 << PC1) | (1 << PC0);
 
 	/* no pullups on USB and ISP pins */
 	PORTD = 0;
 	PORTB = 0;
-	/* all outputs except PD2 = INT0 */
-	DDRD = ~(1 << 2);
-
-	/* output SE0 for USB reset */
-	DDRB = ~0;
-	j = 0;
-	/* USB Reset by device only required on Watchdog Reset */
-	while (--j) {
-		i = 0;
-		/* delay >10ms for USB reset */
-		while (--i)
-			;
-	}
-	/* all USB and ISP pins inputs */
+	
+	/* aleh: both ports are inputs for now, only needed pins will be reconfigured later. */
+	DDRD = 0;
 	DDRB = 0;
 
-	/* all inputs except PC0, PC1 */
-	DDRC = 0x03;
-	PORTC = 0xfe;
+	/* USB Reset by device (only required on Watchdog Reset). */
+	/* aleh: let's blink red while resetting. */
+	leds(0, 1);
+	/* Output SE0 for USB reset */
+	/* aleh: i.e. both D+ and D- should be low. */
+	PORTB &= ~((1 << PB1) | (1 << PB0));
+	DDRB |= (1 << PB1) | (1 << PB0);
+	/* aleh: there was a delay loop here instead which probably would still work, I've put this when was debugging. */
+	_delay_ms(100);	
+	DDRB = 0;
+	/* aleh: and back to the blue. */
+	leds(1, 0);
 
 	/* init timer */
 	clockInit();
+  
+	usbInit();
 
 	/* main event loop */
-	usbInit();
 	sei();
 	for (;;) {
 		usbPoll();

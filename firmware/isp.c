@@ -28,8 +28,9 @@ void spiHWenable() {
 
 void ispSetSCKOption(uchar option) {
 
+	/* aleh: 375 kHz felt a bit slow, even 1500 was working for me, but putting 750 to be safe. */
 	if (option == USBASP_ISP_SCK_AUTO)
-		option = USBASP_ISP_SCK_375;
+		option = USBASP_ISP_SCK_750;
 
 	if (option >= USBASP_ISP_SCK_93_75) {
 		ispTransmit = ispTransmit_hw;

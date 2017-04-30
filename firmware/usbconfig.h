@@ -229,12 +229,13 @@ the newest features and options.
  * which is not fully supported (such as IAR C) or if you use a differnt
  * interrupt than INT0, you may have to define some of these.
  */
-/* #define USB_INTR_CFG            MCUCR */
-/* #define USB_INTR_CFG_SET        ((1 << ISC00) | (1 << ISC01)) */
-/* #define USB_INTR_CFG_CLR        0 */
-/* #define USB_INTR_ENABLE         GIMSK */
-/* #define USB_INTR_ENABLE_BIT     INT0 */
-/* #define USB_INTR_PENDING        GIFR */
-/* #define USB_INTR_PENDING_BIT    INTF0 */
+/* aleh: these were commented out before, but I had to redefine register names for ATmega88. */
+#define USB_INTR_CFG            EICRA 
+#define USB_INTR_CFG_SET        ((1 << ISC00) | (1 << ISC01))
+#define USB_INTR_CFG_CLR        0
+#define USB_INTR_ENABLE         EIMSK
+#define USB_INTR_ENABLE_BIT     INT0
+#define USB_INTR_PENDING        EIFR
+#define USB_INTR_PENDING_BIT    INTF0
 
 #endif /* __usbconfig_h_included__ */

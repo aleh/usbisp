@@ -11,7 +11,9 @@
 #ifndef __clock_h_included__
 #define	__clock_h_included__
 
-#define F_CPU           12000000L   /* 12MHz */
+// aleh: F_CPU is now defined via the command line instead so more headers can be aware of it.
+//~ #define F_CPU           12000000L   /* 12MHz */
+
 #define TIMERVALUE      TCNT0
 #define CLOCK_T_320us	60
 

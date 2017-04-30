@@ -7,18 +7,26 @@
 # TARGET=atmega8    HFUSE=0xc9  LFUSE=0xef
 # TARGET=atmega48   HFUSE=0xdd  LFUSE=0xff
 # TARGET=at90s2313
-TARGET=atmega8
-HFUSE=0xc9
-LFUSE=0xef
+# TARGET=atmega8		HFUSE=0xc9	LFUSE=0xef
 
+# aleh: the MX-USBISP-V4.00 clone is based on mega88.
+TARGET=atmega88
+HFUSE=0xDD
+LFUSE=0xFF
+
+# aleh: it was hardcoded before and is not going to change, but I need in more than one place, so let's define it here.
+CLOCK=12000000
 
 # ISP=bsd      PORT=/dev/parport0
 # ISP=ponyser  PORT=/dev/ttyS1
 # ISP=stk500   PORT=/dev/ttyS1
 # ISP=usbasp   PORT=/dev/usb/ttyUSB0
 # ISP=stk500v2 PORT=/dev/ttyUSB0
-ISP=usbasp
-PORT=/dev/usb/ttyUSB0
+
+# aleh: I was using an Arduino Uno with ArduinoISP example running on it, which has 19200 baud communication speed by default.
+ISP=avrisp
+PORT=`echo /dev/tty.usbmodemFA*`
+EXTRA=-b 19200
 
 help:
 	@echo "Usage: make                same as make help"
@@ -33,11 +41,11 @@ help:
 	@echo "       TARGET=${TARGET}"
 	@echo "       LFUSE=${LFUSE}"
 	@echo "       HFUSE=${HFUSE}"
-	@echo "       CLOCK=12000000"
+	@echo "       CLOCK=${CLOCK}"
 	@echo "       ISP=${ISP}"
 	@echo "       PORT=${PORT}"
 
-COMPILE = avr-gcc -Wall -O2 -Iusbdrv -I. -mmcu=$(TARGET) # -DDEBUG_LEVEL=2
+COMPILE = avr-gcc -Wall -O2 -Iusbdrv -I. -mmcu=$(TARGET) -DF_CPU=$(CLOCK) # -DDEBUG_LEVEL=2
 
 OBJECTS = usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o isp.o clock.o tpi.o main.o
 
@@ -76,13 +84,13 @@ cpp:
 	$(COMPILE) -E main.c
 
 flash:
-	avrdude -c ${ISP} -p ${TARGET} -P ${PORT} -U flash:w:main.hex
+	avrdude -c ${ISP} -p ${TARGET} -P ${PORT} ${EXTRA} -U flash:w:main.hex
 
 fuses:
-	avrdude -c ${ISP} -p ${TARGET} -P ${PORT} -u -U hfuse:w:$(HFUSE):m -U lfuse:w:$(LFUSE):m
+	avrdude -c ${ISP} -p ${TARGET} -P ${PORT} ${EXTRA} -u -U hfuse:w:$(HFUSE):m -U lfuse:w:$(LFUSE):m
 
 avrdude:
-	avrdude -c ${ISP} -p ${TARGET} -P ${PORT} -v
+	avrdude -c ${ISP} -p ${TARGET} -P ${PORT} ${EXTRA} -v
 
 # Fuse atmega8 high byte HFUSE:
 # 0xc9 = 1 1 0 0   1 0 0 1 <-- BOOTRST (boot reset vector at 0x0000)
@@ -122,6 +130,32 @@ avrdude:
 # 0xe0 = divide/1,no clock output,fast raising power,external Oszil.
 # 0xff = divide/1,no clock output,slow raising power,low Pw Oszil 8..  Mhz
 
+# ATmega88 has different fuse bits, let's figure out which we need:
+#
+# EFUSE
+# 2 N/A BOOTSZ1 * 1 
+# 1 N/A BOOTSZ0 * 1
+# 0 N/A BOOTRST * 1
+#
+# HFUSE: DD
+# 7 RSTDISBL RSTDISBL        1
+# 6 WDTON    DWEN            1
+# 5 SPIEN    SPIEN           0
+# 4 CKOPT    WDTON *         1
+# 3 EESAVE   EESAVE          1
+# 2 BOOTSZ1  BODLEVEL2 *     1
+# 1 BOOTSZ0  BODLEVEL1 *     0
+# 0 BOOTRST  BODLEVEL0 *     1
+#
+# LFUSE: FF
+# 7 BODLEVEL CKDIV8 * 1
+# 6 BODEN CKOUT       1
+# 5 SUT1 SUT1         1
+# 4 SUT0 SUT0         1
+# 3 CKSEL3 CKSEL3     1
+# 2 CKSEL2 CKSEL2     1
+# 1 CKSEL1 CKSEL1     1
+# 0 CKSEL0 CKSEL0     1 
 
 SERIAL = `echo /dev/tty.USA19QI*`
 UISP = uisp -dprog=$S -dserial=$(SERIAL) -dpart=auto
