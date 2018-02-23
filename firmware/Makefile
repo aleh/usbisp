@@ -12,7 +12,7 @@
 # aleh: the MX-USBISP-V4.00 clone is based on mega88.
 TARGET=atmega88
 HFUSE=0xDD
-LFUSE=0xFF
+LFUSE=0xEF
 
 # aleh: it was hardcoded before and is not going to change, but I need in more than one place, so let's define it here.
 CLOCK=12000000
