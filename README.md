@@ -2,6 +2,8 @@
 
 This is a fork of the original [USBasp](http://www.fischl.de/usbasp/) firmware (the file from [2011-05-28](http://www.fischl.de/usbasp/usbasp.2011-05-28.tar.gz)) tweaked to work with clone "USB ISP Version 2.0" devices (marked "MX-USBISP-V4.00" on the PCB). The original documentation and license is in `Readme.txt`.
 
+Update: as reported by [erokui](https://github.com/erokui) devices marked with "MX-USBISP-V5.00" seem to work as well.
+
 ## What is USB ISP?
 
 This is a very cheap programmer for AVR-based microcontrollers available from many Chinese suppliers. Hardware-wise it appears to be very similar to [USBasp](http://www.fischl.de/usbasp/), but out of the box it works only with a Windows GUI utility from the manufacturer and does not work with [avrdude](http://www.nongnu.org/avrdude/).
