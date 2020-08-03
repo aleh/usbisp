@@ -2,7 +2,7 @@
 
 This is a fork of the original [USBasp](http://www.fischl.de/usbasp/) firmware (the file from [2011-05-28](http://www.fischl.de/usbasp/usbasp.2011-05-28.tar.gz)) tweaked to work with clone "USB ISP Version 2.0" devices (marked "MX-USBISP-V4.00" on the PCB). The original documentation and license is in `Readme.txt`.
 
-Update: as reported by [erokui](https://github.com/erokui) devices marked with "MX-USBISP-V5.00" seem to work as well.
+Update: as reported by [erokui](https://github.com/erokui) and [steadramon](https://github.com/steadramon) devices marked with "MX-USBISP-V5.00" and "MX-USBISP-V6.00" work as well, the latter have to be flashed with `-p ATmega88P` option. Thanks guys!
 
 ## What is USB ISP?
 
